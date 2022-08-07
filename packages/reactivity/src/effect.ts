@@ -174,7 +174,9 @@ export function effect<T = any>(
   if ((fn as ReactiveEffectRunner).effect) {
     fn = (fn as ReactiveEffectRunner).effect.fn
   }
-
+  //ReactiveEffect是Effect的运行实例，其
+  //1.设置了acctiveEffect
+  //2.对fn回调进行了封装
   const _effect = new ReactiveEffect(fn)
   if (options) {
     extend(_effect, options)

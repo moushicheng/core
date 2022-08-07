@@ -1200,6 +1200,7 @@ function baseCreateRenderer(
     // mounting
     const compatMountInstance =
       __COMPAT__ && initialVNode.isCompatRoot && initialVNode.component
+    //创建组件实例
     const instance: ComponentInternalInstance =
       compatMountInstance ||
       (initialVNode.component = createComponentInstance(
@@ -1207,7 +1208,7 @@ function baseCreateRenderer(
         parentComponent,
         parentSuspense
       ))
-
+  
     if (__DEV__ && instance.type.__hmrId) {
       registerHMR(instance)
     }
@@ -1227,6 +1228,9 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
+      //处理组件内的setup选项
+      //若setup返回对象，则配合render选项进行渲染
+      //若setup返回函数，则将其视为render函数进行渲染
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
@@ -1246,7 +1250,7 @@ function baseCreateRenderer(
       }
       return
     }
-
+//安装 renderEffect，其实就是执行组件选项render
     setupRenderEffect(
       instance,
       initialVNode,
@@ -1373,6 +1377,7 @@ function baseCreateRenderer(
           if (__DEV__) {
             startMeasure(instance, `render`)
           }
+          //render选项被执行
           const subTree = (instance.subTree = renderComponentRoot(instance))
           if (__DEV__) {
             endMeasure(instance, `render`)
