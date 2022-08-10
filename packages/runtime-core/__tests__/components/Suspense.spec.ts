@@ -12,7 +12,8 @@ import {
   watchEffect,
   onUnmounted,
   onErrorCaptured,
-  shallowRef
+  shallowRef,
+  KeepAlive
 } from '@vue/runtime-test'
 import { createApp } from 'vue'
 
@@ -37,7 +38,7 @@ describe('Suspense', () => {
         })
         // in Node 12, due to timer/nextTick mechanism change, we have to wait
         // an extra tick to avoid race conditions
-        deps.push(p)
+        deps.push(p.then(() => Promise.resolve()))
         return p
       }
     }
@@ -1252,5 +1253,48 @@ describe('Suspense', () => {
     expect(
       `A component with async setup() must be nested in a <Suspense>`
     ).toHaveBeenWarned()
+  })
+
+  test('test keepalive with suspense', async () => {
+    //bug点，defalut loading时，切换别的组件会导致keepalive整体失效
+    const Async = defineAsyncComponent({
+      render() {
+        return h('div', 'async')
+      }
+    })
+    const sync1 = {
+      render() {
+        return h('div', 'sync1')
+      }
+    }
+    const sync2 = {
+      render() {
+        return h('div', 'sync2')
+      }
+    }
+    const components = [Async, sync1, sync2]
+    const viewRef = ref(0)
+    const root = nodeOps.createElement('div') 
+    const App = {
+      //render被封装成componentUpdateFn然后被丢到reactiveEffect内部执行，以此使render被其内部的ref数据捕获
+      render() {
+        return h(KeepAlive, null, {
+          default: () => {
+            return h(Suspense, null, {
+              default: h(components[viewRef.value]),
+              fallback: h('div', 'Loading-dynamic-components')
+            })
+          }
+        })
+      }
+    }
+    render(h(App), root)
+    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
+    viewRef.value = 1
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>sync1</div>`)
+    viewRef.value = 0
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`) //这里竟然为空了
   })
 })

@@ -592,6 +592,7 @@ export function isStatefulComponent(instance: ComponentInternalInstance) {
 
 export let isInSSRComponentSetup = false
 
+//用来执行setup用的核心函数
 export function setupComponent(
   instance: ComponentInternalInstance,
   isSSR = false
@@ -664,7 +665,7 @@ function setupStatefulComponent(
     )
     resetTracking()
     unsetCurrentInstance()
-//z 这里用于处理suspense返回的异步渲染函数
+// 这里用于处理suspense返回的异步渲染函数
     if (isPromise(setupResult)) {
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance)
       if (isSSR) {

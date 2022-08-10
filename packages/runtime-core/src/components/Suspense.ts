@@ -602,6 +602,7 @@ function createSuspenseBoundary(
           if (__DEV__) {
             pushWarningContext(vnode)
           }
+          //处理default渲染结果
           handleSetupResult(instance, asyncSetupResult, false)
           if (hydratedEl) {
             // vnode may have been replaced if an update happened before the
