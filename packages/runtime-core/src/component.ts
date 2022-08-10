@@ -664,7 +664,7 @@ function setupStatefulComponent(
     )
     resetTracking()
     unsetCurrentInstance()
-
+//z 这里用于处理suspense返回的异步渲染函数
     if (isPromise(setupResult)) {
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance)
       if (isSSR) {
@@ -679,7 +679,7 @@ function setupStatefulComponent(
       } else if (__FEATURE_SUSPENSE__) {
         // async setup returned Promise.
         // bail here and wait for re-entry.
-        instance.asyncDep = setupResult
+        instance.asyncDep = setupResult //setupResult是defalut异步渲染函数返回的promise
         if (__DEV__ && !instance.suspense) {
           const name = Component.name ?? 'Anonymous'
           warn(

@@ -97,7 +97,7 @@ export class ReactiveEffect<T = any> {
     }
     try {
       this.parent = activeEffect
-      activeEffect = this
+      activeEffect = this //很关键这里 
       shouldTrack = true
 
       trackOpBit = 1 << ++effectTrackDepth

@@ -81,7 +81,7 @@ describe('KeepAlive', () => {
     const viewRef = ref('one')
     const instanceRef = ref<any>(null)
     const App = {
-      //render会被丢到reactiveEffect内部执行，以此使render被其内部的ref数据捕获
+      //render被封装成componentUpdateFn然后被丢到reactiveEffect内部执行，以此使render被其内部的ref数据捕获
       render() {
         return h(KeepAlive, null, {
           default: () => h(views[viewRef.value], { ref: instanceRef })

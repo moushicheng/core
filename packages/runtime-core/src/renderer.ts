@@ -1163,6 +1163,7 @@ function baseCreateRenderer(
   ) => {
     n2.slotScopeIds = slotScopeIds
     if (n1 == null) {
+      //为keepAlive量身定制的mount，要求该节点已经被缓存
       if (n2.shapeFlag & ShapeFlags.COMPONENT_KEPT_ALIVE) {
         ;(parentComponent!.ctx as KeepAliveContext).activate(
           n2,
@@ -1239,6 +1240,7 @@ function baseCreateRenderer(
 
     // setup() is async. This component relies on async logic to be resolved
     // before proceeding
+    // SUSPENSE独有的拦截，目的在于阻止default的空渲染，因为default不应该被马上渲染 
     if (__FEATURE_SUSPENSE__ && instance.asyncDep) {
       parentSuspense && parentSuspense.registerDep(instance, setupRenderEffect)
 
@@ -1250,7 +1252,7 @@ function baseCreateRenderer(
       }
       return
     }
-//安装 renderEffect，其实就是执行组件选项render
+//安装 renderEffect，其实就是执行组件选项render，render返回的子树会继续挂载
     setupRenderEffect(
       instance,
       initialVNode,
@@ -2089,7 +2091,8 @@ function baseCreateRenderer(
     if (ref != null) {
       setRef(ref, null, parentSuspense, vnode, true)
     }
-
+    
+    //为keepAlive量身定制
     if (shapeFlag & ShapeFlags.COMPONENT_SHOULD_KEEP_ALIVE) {
       ;(parentComponent!.ctx as KeepAliveContext).deactivate(vnode)
       return

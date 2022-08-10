@@ -111,7 +111,7 @@ const KeepAliveImpl: ComponentOptions = {
       ;(instance as any).__v_cache = cache
     }
 
-    const parentSuspense = instance.suspense
+    const parentSuspense = instance.suspense //有待理解
 
     const {
       renderer: {

@@ -37,7 +37,7 @@ describe('Suspense', () => {
         })
         // in Node 12, due to timer/nextTick mechanism change, we have to wait
         // an extra tick to avoid race conditions
-        deps.push(p.then(() => Promise.resolve()))
+        deps.push(p)
         return p
       }
     }
