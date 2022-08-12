@@ -212,7 +212,8 @@ function setElementText(el: TestElement, text: string) {
 }
 
 function parentNode(node: TestNode): TestElement | null {
-  return node.parentNode
+  if(node)return node.parentNode
+  return null;
 }
 
 function nextSibling(node: TestNode): TestNode | null {

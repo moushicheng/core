@@ -78,7 +78,7 @@ interface SuspenseBoundary {
   deps: number
   pendingId: number
   timeout: number
-  isInFallback: boolean //表示是否正在Fallback阶段
+  isInFallback: boolean //表示是否正在Fallback阶段，false时貌似就是resolve状态了
   isHydrating: boolean  //ssr相关
   isUnmounted: boolean
   effects: Function[]

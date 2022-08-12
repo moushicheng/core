@@ -93,4 +93,16 @@ move(vnode, storageContainer, null, MoveType.LEAVE, parentSuspense)
 1. 对于suspense，如果当前激活实例(这里是Fallback)存在,会先让其卸载
 2. 然后，将pendingBranch从off-dom容器移动到实际容器中
 3. 移动完了之后，将pendingBranch设为ActiveBranch，然后将pending置空
-4. 最后执行所有suspense上的effects
+4. 最后执行所有suspense上的effects 
+
+总结：suspense.resolve会将suspense的状态切换到resolve，这时候所有异步任务都清空且失效了
+
+
+## bug点
+```javascript
+    viewRef.value = 0
+    await nextTick()
+    //Is this a mistake?i think .toBe('<div>Loading-dynamic-components</div>') is correct;
+    expect(serializeInner(root)).toBe('<!---->')
+```
+此时root竟然为一个空的注释节点，按理来说应该是fallback内容，<div>Loading-dynamic-components</div>才对

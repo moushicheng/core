@@ -1286,21 +1286,26 @@ describe('Suspense', () => {
     expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
 
     
-   //当viewRef.value=1时，会触发Keepalive的渲染函数
+   //当viewRef.value=1时，会触发Keepalive的渲染函数，经过推理，貌似bug是从这里开始的，resolve的执行时机 过早了。
     viewRef.value = 1 
     await nextTick()
     expect(serializeInner(root)).toBe(`<div>sync</div>`)
 
     viewRef.value = 0
     await nextTick()
+    
     //Is this a mistake?i think .toBe('<div>Loading-dynamic-components</div>') is correct;
-    expect(serializeInner(root)).toBe('<!---->')
-    Promise.all(deps)
-    await nextTick();
-    // when async loaded,it still be '<!---->'
     expect(serializeInner(root)).toBe('<!---->') 
-    // viewRef.value = 1
-    // await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode')
-    // expect(serializeInner(root)).toBe(`<div>sync</div>`)
+
+    await Promise.all(deps)
+    await nextTick();
+    // when async loaded,it still be '<!---->',it is a bug
+    expect(serializeInner(root)).toBe('<!---->') 
+
+
+    viewRef.value = 1
+    await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode')
+    expect(serializeInner(root)).toBe(`<div>sync</div>`)
+
   })
 })
