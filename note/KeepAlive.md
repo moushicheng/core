@@ -94,3 +94,5 @@ return isSuspense(rawVNode.type) ? rawVNode : vnode
 1. 问题1：为啥keepAlive不应该缓存非组件节点？
 第一:keepAlive在编译器就会进行初步检测
 第二：从keepAlive实现上来说，因为缓存的Map的key是vnode.type，而如果是普通节点key就无法保证唯一性，比如div,p这类元素节点
+
+2. 问题2：KeepAlive如何透穿节点？

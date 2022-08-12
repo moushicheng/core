@@ -63,6 +63,42 @@ patch(null,(suspense.pendingBranch = vnode.ssContent!),hiddenContainer,null,pare
   }
 ```
 
+顺便，再认识一下suspense对象
+```javascript
+interface SuspenseBoundary {
+  vnode: VNode<RendererNode, RendererElement, SuspenseProps>
+  parent: SuspenseBoundary | null
+  parentComponent: ComponentInternalInstance | null
+  isSVG: boolean
+  container: RendererElement   //实际dom容器
+  hiddenContainer: RendererElement //内存中的隐藏dom容器
+  anchor: RendererNode | null   
+  activeBranch: VNode | null   //当前suspense正在激活的实例，比如最开始激活的总是fallback
+  pendingBranch: VNode | null  //正在pending的vnode，比如最开始总是pending的是default中的异步组件
+  deps: number
+  pendingId: number
+  timeout: number
+  isInFallback: boolean //表示是否正在Fallback阶段
+  isHydrating: boolean  //ssr相关
+  isUnmounted: boolean
+  effects: Function[]
+  resolve(force?: boolean): void
+  fallback(fallbackVNode: VNode): void
+  move(
+    container: RendererElement,
+    anchor: RendererNode | null,
+    type: MoveType
+  ): void
+  next(): RendererNode | null
+  registerDep(
+    instance: ComponentInternalInstance,
+    setupRenderEffect: SetupRenderEffectFn
+  ): void
+  unmount(parentSuspense: SuspenseBoundary | null, doRemove?: boolean): void
+}
+```
+
+
 4. 在 patch 的过程中会执行 Async.setup，其内部返回了一个 promise，会经过特殊处理,实际上就是打上了回调处理方法
 
 ```javascript
@@ -116,4 +152,20 @@ registerDep(instance, setupRenderEffect){
 2. 然后在 process 内部会挂载 default
 3. default.setup 返回了一个 Promise 会被 vue 存储下来，然后后续真正的 dom 挂载会被截断。
 4. 然后 Promise 作用链会被打上各种方法，比如错误处理(ErrorCodes.SETUP_FUNCTION)和核心渲染（在 promise 链最尾端执行 render）
-5. 完成第一步default patch之后会进行fallback patch
+5. 完成第一步 default patch 之后会进行 fallback patch
+
+## suspense patch 逻辑
+
+```javaScript
+      patchSuspense(
+        n1,
+        n2,
+        container,
+        anchor,
+        parentComponent,
+        isSVG,
+        slotScopeIds,
+        optimized,
+        rendererInternals
+      )
+```

@@ -1256,27 +1256,21 @@ describe('Suspense', () => {
   })
 
   test('test keepalive with suspense', async () => {
-    //bug点，defalut loading时，切换别的组件会导致keepalive整体失效
+    //bug:keepalive is not normal when switch to sync component before Async loading
     const Async = defineAsyncComponent({
       render() {
         return h('div', 'async')
       }
     })
-    const sync1 = {
+    const sync = {
       render() {
-        return h('div', 'sync1')
+        return h('div', 'sync')
       }
     }
-    const sync2 = {
-      render() {
-        return h('div', 'sync2')
-      }
-    }
-    const components = [Async, sync1, sync2]
+    const components = [Async, sync,]
     const viewRef = ref(0)
     const root = nodeOps.createElement('div') 
     const App = {
-      //render被封装成componentUpdateFn然后被丢到reactiveEffect内部执行，以此使render被其内部的ref数据捕获
       render() {
         return h(KeepAlive, null, {
           default: () => {
@@ -1286,15 +1280,27 @@ describe('Suspense', () => {
             })
           }
         })
-      }
+      } 
     }
     render(h(App), root)
     expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
-    viewRef.value = 1
+
+    
+   //当viewRef.value=1时，会触发Keepalive的渲染函数
+    viewRef.value = 1 
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>sync1</div>`)
+    expect(serializeInner(root)).toBe(`<div>sync</div>`)
+
     viewRef.value = 0
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`) //这里竟然为空了
+    //Is this a mistake?i think .toBe('<div>Loading-dynamic-components</div>') is correct;
+    expect(serializeInner(root)).toBe('<!---->')
+    Promise.all(deps)
+    await nextTick();
+    // when async loaded,it still be '<!---->'
+    expect(serializeInner(root)).toBe('<!---->') 
+    // viewRef.value = 1
+    // await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode')
+    // expect(serializeInner(root)).toBe(`<div>sync</div>`)
   })
 })

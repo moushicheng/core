@@ -111,7 +111,7 @@ const KeepAliveImpl: ComponentOptions = {
       ;(instance as any).__v_cache = cache
     }
 
-    const parentSuspense = instance.suspense //有待理解
+    const parentSuspense = instance.suspense 
 
     const {
       renderer: {
@@ -215,6 +215,7 @@ const KeepAliveImpl: ComponentOptions = {
     )
 
     // cache sub tree after render
+    //在mounted挂载之后，才会进行存储实例
     let pendingCacheKey: CacheKey | null = null
     const cacheSubtree = () => {
       // fix #1621, the pendingCacheKey could be 0
@@ -250,6 +251,7 @@ const KeepAliveImpl: ComponentOptions = {
 
       const children = slots.default()
       const rawVNode = children[0]
+      //这一整个if都用不上
       if (children.length > 1) {
         if (__DEV__) {
           warn(`KeepAlive should contain exactly one component child.`)
@@ -265,7 +267,7 @@ const KeepAliveImpl: ComponentOptions = {
         return rawVNode
       }
 
-      let vnode = getInnerChild(rawVNode)
+      let vnode = getInnerChild(rawVNode) //@mark suspense，获得ssContent
       const comp = vnode.type as ConcreteComponent
 
       // for async components, name check should be based in its loaded
@@ -327,7 +329,7 @@ const KeepAliveImpl: ComponentOptions = {
       vnode.shapeFlag |= ShapeFlags.COMPONENT_SHOULD_KEEP_ALIVE
 
       current = vnode
-      return isSuspense(rawVNode.type) ? rawVNode : vnode
+      return isSuspense(rawVNode.type) ? rawVNode : vnode //@mark suspense,suspense就返回rawVnode
     }
   }
 }
