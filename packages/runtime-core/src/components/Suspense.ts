@@ -189,7 +189,7 @@ function patchSuspense(
   const { activeBranch, pendingBranch, isInFallback, isHydrating } = suspense
   if (pendingBranch) {
     suspense.pendingBranch = newBranch
-    if (isSameVNodeType(newBranch, pendingBranch)) {
+    if (isSameVNodeType(newBranch, pendingBranch)) { // n1.type === n2.type && n1.key === n2.key
       // same root type but content may have changed.
       patch(
         pendingBranch,
@@ -321,7 +321,7 @@ function patchSuspense(
       triggerEvent(n2, 'onPending')
       // mount pending branch in off-dom container
       suspense.pendingBranch = newBranch
-      suspense.pendingId++
+      if(suspense.pendingId>0)suspense.pendingId--;
       patch(
         null,
         newBranch,
@@ -490,6 +490,7 @@ function createSuspenseBoundary(
       setActiveBranch(suspense, pendingBranch!)
       suspense.pendingBranch = null
       suspense.isInFallback = false
+      // suspense.pendingId--;
 
       // flush buffered effects
       // check if there is a pending parent suspense
@@ -589,6 +590,8 @@ function createSuspenseBoundary(
         .then(asyncSetupResult => {
           // retry when the setup() promise resolves.
           // component may have been unmounted before resolve.
+          //defalut真正执行时
+          //BUG点，错误的提前退出
           if (
             instance.isUnmounted ||
             suspense.isUnmounted ||

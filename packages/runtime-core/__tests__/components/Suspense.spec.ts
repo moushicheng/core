@@ -1254,7 +1254,7 @@ describe('Suspense', () => {
       `A component with async setup() must be nested in a <Suspense>`
     ).toHaveBeenWarned()
   })
-
+  jest.setTimeout(3000000)
   test('test keepalive with suspense', async () => {
     //bug:keepalive is not normal when switch to sync component before Async loading
     const Async = defineAsyncComponent({
@@ -1286,7 +1286,7 @@ describe('Suspense', () => {
     expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
 
     
-   //当viewRef.value=1时，会触发Keepalive的渲染函数，经过推理，貌似bug是从这里开始的，resolve的执行时机 过早了。
+   //当viewRef.value=1时，会触发Keepalive的渲染函数
     viewRef.value = 1 
     await nextTick()
     expect(serializeInner(root)).toBe(`<div>sync</div>`)
@@ -1294,18 +1294,16 @@ describe('Suspense', () => {
     viewRef.value = 0
     await nextTick()
     
-    //Is this a mistake?i think .toBe('<div>Loading-dynamic-components</div>') is correct;
     expect(serializeInner(root)).toBe('<!---->') 
 
     await Promise.all(deps)
     await nextTick();
-    // when async loaded,it still be '<!---->',it is a bug
-    expect(serializeInner(root)).toBe('<!---->') 
+    // when async resolve,it still be '<!---->',it is a bug,it should be <div>async</div>
+    expect(serializeInner(root)).toBe('<div>async</div>') 
 
 
     viewRef.value = 1
-    await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode')
+    await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode'),This has been fixed
     expect(serializeInner(root)).toBe(`<div>sync</div>`)
-
   })
 })
