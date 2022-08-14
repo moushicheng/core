@@ -1267,8 +1267,9 @@ describe('Suspense', () => {
         return h('div', 'sync')
       }
     }
-    const components = [Async, sync,]
-    const viewRef = ref(0)
+    
+    const components = [Async, sync]
+    const viewRef = ref(1)
     const root = nodeOps.createElement('div') 
     const App = {
       render() {
@@ -1283,27 +1284,20 @@ describe('Suspense', () => {
       } 
     }
     render(h(App), root)
-    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
+    expect(serializeInner(root)).toBe(`<div>sync</div>`)
 
-    
-   //当viewRef.value=1时，会触发Keepalive的渲染函数
+
+    viewRef.value = 0
+    await nextTick()    
+    expect(serializeInner(root)).toBe('<div>sync</div>') 
+
     viewRef.value = 1 
     await nextTick()
     expect(serializeInner(root)).toBe(`<div>sync</div>`)
 
     viewRef.value = 0
-    await nextTick()
-    
-    expect(serializeInner(root)).toBe('<!---->') 
-
     await Promise.all(deps)
     await nextTick();
-    // when async resolve,it still be '<!---->',it is a bug,it should be <div>async</div>
     expect(serializeInner(root)).toBe('<div>async</div>') 
-
-
-    viewRef.value = 1
-    await nextTick() //TypeError: Cannot read properties of null (reading 'parentNode'),This has been fixed
-    expect(serializeInner(root)).toBe(`<div>sync</div>`)
   })
 })

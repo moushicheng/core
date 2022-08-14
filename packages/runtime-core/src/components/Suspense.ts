@@ -189,7 +189,7 @@ function patchSuspense(
   const { activeBranch, pendingBranch, isInFallback, isHydrating } = suspense
   if (pendingBranch) {
     suspense.pendingBranch = newBranch
-    if (isSameVNodeType(newBranch, pendingBranch)) { // n1.type === n2.type && n1.key === n2.key
+    if (isSameVNodeType(newBranch, pendingBranch)) {
       // same root type but content may have changed.
       patch(
         pendingBranch,
@@ -220,7 +220,7 @@ function patchSuspense(
       }
     } else {
       // toggled before pending tree is resolved
-      suspense.pendingId++
+      suspense.pendingId++  //旧default还没pending完，当然要增加pendingId
       if (isHydrating) {
         // if toggled before hydration is finished, the current DOM tree is
         // no longer valid. set it as the active branch so it will be unmounted
@@ -321,7 +321,7 @@ function patchSuspense(
       triggerEvent(n2, 'onPending')
       // mount pending branch in off-dom container
       suspense.pendingBranch = newBranch
-      if(suspense.pendingId>0)suspense.pendingId--;
+      if (suspense.pendingId > 0) suspense.pendingId-- //旧default已经pending完(因为pendingBranch==null)，所以必须--
       patch(
         null,
         newBranch,
@@ -490,7 +490,6 @@ function createSuspenseBoundary(
       setActiveBranch(suspense, pendingBranch!)
       suspense.pendingBranch = null
       suspense.isInFallback = false
-      // suspense.pendingId--;
 
       // flush buffered effects
       // check if there is a pending parent suspense
@@ -590,8 +589,6 @@ function createSuspenseBoundary(
         .then(asyncSetupResult => {
           // retry when the setup() promise resolves.
           // component may have been unmounted before resolve.
-          //defalut真正执行时
-          //BUG点，错误的提前退出
           if (
             instance.isUnmounted ||
             suspense.isUnmounted ||
@@ -605,7 +602,6 @@ function createSuspenseBoundary(
           if (__DEV__) {
             pushWarningContext(vnode)
           }
-          //处理default渲染结果
           handleSetupResult(instance, asyncSetupResult, false)
           if (hydratedEl) {
             // vnode may have been replaced if an update happened before the
