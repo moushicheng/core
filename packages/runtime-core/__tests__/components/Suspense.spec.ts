@@ -1302,6 +1302,6 @@ describe('Suspense', () => {
     await Promise.all(deps)
     viewRef.value = 0
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>sync2</div>`)
+    expect(serializeInner(root)).toBe(`<div>async</div>`)
   })
 })
