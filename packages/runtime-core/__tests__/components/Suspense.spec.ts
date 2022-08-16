@@ -1256,26 +1256,25 @@ describe('Suspense', () => {
   })
   jest.setTimeout(3000000)
   test('test keepalive with suspense', async () => {
-    //bug:keepalive is not normal when switch to sync component before Async loading
     const Async = defineAsyncComponent({
       render() {
         return h('div', 'async')
       }
     })
-    const sync = {
-      render() {
-        return h('div', 'sync')
-      }
-    }
-
     const sync1 = {
       render() {
         return h('div', 'sync1')
       }
     }
+
+    const sync2 = {
+      render() {
+        return h('div', 'sync2')
+      }
+    }
     
-    const components = [Async, sync,sync1]
-    const viewRef = ref(1)
+    const components = [Async, sync1,sync2]
+    const viewRef = ref(0)
     const root = nodeOps.createElement('div') 
     const App = {
       render() {
@@ -1290,28 +1289,19 @@ describe('Suspense', () => {
       } 
     }
     render(h(App), root)
-    expect(serializeInner(root)).toBe(`<div>sync</div>`)
-
-
-    viewRef.value = 0
-    await nextTick()    
-    expect(serializeInner(root)).toBe('<div>sync</div>') 
+    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
 
     viewRef.value = 1 
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>sync</div>`)
-
-    viewRef.value = 0
-    await Promise.all(deps)
-    await nextTick();
-    expect(serializeInner(root)).toBe('<div>async</div>') 
-
-    viewRef.value = 2 
-    await nextTick()
     expect(serializeInner(root)).toBe(`<div>sync1</div>`)
 
+    viewRef.value = 2
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>sync2</div>`)
+    
+    await Promise.all(deps)
     viewRef.value = 0
-    await nextTick()    
-    expect(serializeInner(root)).toBe('<div>async</div>') 
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>sync2</div>`)
   })
 })

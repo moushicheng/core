@@ -354,4 +354,23 @@ describe('renderer: component', () => {
     expect(serializeInner(root)).toBe(`<h1>1</h1>`)
     expect(spy).toHaveBeenCalledTimes(2)
   })
+
+  test('my', async () => {
+    const value = ref(true)
+    const Child = {
+      render: () => {
+        return value.value
+          ? 'value=true'
+          : 'value=false'
+      }
+    }
+
+    const root = nodeOps.createElement('div')
+    render(h(Child), root)
+    expect(serializeInner(root)).toBe(`value=true`)
+
+    value.value = false
+    await nextTick()
+    expect(serializeInner(root)).toBe(`value=false`)
+  })
 })
