@@ -322,6 +322,8 @@ function patchSuspense(
       // mount pending branch in off-dom container
       suspense.pendingBranch = newBranch
       if (suspense.pendingId > 0) suspense.pendingId-- //旧default已经pending完(因为pendingBranch==null)，所以必须--
+
+      //先把正在pending的ssContent，patch到off-dom容器中整备,vue的策略:先让原先的激活分支（activeBranch）顶上不变
       patch(
         null,
         newBranch,

@@ -1267,8 +1267,14 @@ describe('Suspense', () => {
         return h('div', 'sync')
       }
     }
+
+    const sync1 = {
+      render() {
+        return h('div', 'sync1')
+      }
+    }
     
-    const components = [Async, sync]
+    const components = [Async, sync,sync1]
     const viewRef = ref(1)
     const root = nodeOps.createElement('div') 
     const App = {
@@ -1298,6 +1304,14 @@ describe('Suspense', () => {
     viewRef.value = 0
     await Promise.all(deps)
     await nextTick();
+    expect(serializeInner(root)).toBe('<div>async</div>') 
+
+    viewRef.value = 2 
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div>sync1</div>`)
+
+    viewRef.value = 0
+    await nextTick()    
     expect(serializeInner(root)).toBe('<div>async</div>') 
   })
 })
