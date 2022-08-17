@@ -220,6 +220,7 @@ function patchSuspense(
       }
     } else {
       // toggled before pending tree is resolved
+      //pendingId，记录当前正在pending的分支数量，且只在patchSuspense里进行增减
       suspense.pendingId++  //旧default还没pending完，当然要增加pendingId
       if (isHydrating) {
         // if toggled before hydration is finished, the current DOM tree is
@@ -323,7 +324,7 @@ function patchSuspense(
       suspense.pendingBranch = newBranch
       if (suspense.pendingId > 0) suspense.pendingId-- //旧default已经pending完(因为pendingBranch==null)，所以必须--
 
-      //先把正在pending的ssContent，patch到off-dom容器中整备,vue的策略:先让原先的激活分支（activeBranch）顶上不变
+      //先把正在pending的ssContent，patch到off-dom容器中整备,vue的策略:先让原先的激活分支（activeBranch）顶上不变,然后再根据deps的情况，进行resolve
       patch(
         null,
         newBranch,
