@@ -122,7 +122,8 @@ export function renderComponentRoot(
   // attr merging
   // in dev mode, comments are preserved, and it's possible for a template
   // to have comments along side the root element which makes it a fragment
-  let root = result
+  let root = 
+  result
   let setRoot: SetRootFn = undefined
   if (
     __DEV__ &&

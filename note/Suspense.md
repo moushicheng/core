@@ -75,7 +75,7 @@ interface SuspenseBoundary {
   anchor: RendererNode | null   
   activeBranch: VNode | null   //当前suspense正在激活的实例，比如最开始激活的总是fallback
   pendingBranch: VNode | null  //正在pending的vnode，比如最开始总是pending的是default中的异步组件
-  deps: number
+  deps: number //在registerdeps时增加
   pendingId: number
   timeout: number
   isInFallback: boolean //表示是否正在Fallback阶段，false时貌似就是resolve状态了

@@ -1256,24 +1256,24 @@ describe('Suspense', () => {
   })
   jest.setTimeout(3000000)
   test('test keepalive with suspense', async () => {
-    const Async = defineAsyncComponent({
+    const Async1 = defineAsyncComponent({
       render() {
-        return h('div', 'async')
+        return h('div', 'async1')
       }
     })
+    const Async2 = defineAsyncComponent({
+      render() {
+        return h('div', 'async2')
+      }
+    })
+
     const sync1 = {
       render() {
         return h('div', 'sync1')
       }
     }
-
-    const sync2 = {
-      render() {
-        return h('div', 'sync2')
-      }
-    }
     
-    const components = [Async, sync1,sync2]
+    const components = [Async1, Async2,sync1]
     const viewRef = ref(0)
     const root = nodeOps.createElement('div') 
     const App = {
@@ -1291,17 +1291,18 @@ describe('Suspense', () => {
     render(h(App), root)
     expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
 
-    viewRef.value = 1 
+    viewRef.value = 1
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>sync1</div>`)
+    expect(serializeInner(root)).toBe(`<div>Loading-dynamic-components</div>`)
 
     viewRef.value = 2
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>sync2</div>`)
+    expect(serializeInner(root)).toBe(`<div>sync1</div>`)
     
-    await Promise.all(deps)
-    viewRef.value = 0
+    Promise.all(deps)
+    viewRef.value = 1
     await nextTick()
-    expect(serializeInner(root)).toBe(`<div>async</div>`)
+    expect(serializeInner(root)).toBe(`<!---->`)
+
   })
 })

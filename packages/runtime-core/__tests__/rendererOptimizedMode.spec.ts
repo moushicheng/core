@@ -45,8 +45,7 @@ describe('renderer: optimized mode', () => {
   }
 
   test('basic use of block', () => {
-    render((openBlock(), (block = createBlock('p', null, 'foo'))), root)
-
+    render((openBlock(), (block = createBlock('p', null, 'foo'))), root) //<p>foo</p/>
     expect(block.dynamicChildren!.length).toBe(0)
     expect(inner(root)).toBe('<p>foo</p>')
   })
@@ -60,7 +59,7 @@ describe('renderer: optimized mode', () => {
     expect(block.dynamicChildren!.length).toBe(0)
     expect(inner(root)).toBe('<div><p>foo</p></div>')
   })
-
+//总结，block可以追踪所有子节点中那些含有动态更新的子元素,并赋予到createBlock().vnode.dynamicChildren集合中
   test('block should collect dynamic vnodes', () => {
     renderWithBlock(() => [
       createVNode('p', null, 'foo', PatchFlags.TEXT),

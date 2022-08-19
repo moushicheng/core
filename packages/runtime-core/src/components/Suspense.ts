@@ -229,7 +229,7 @@ function patchSuspense(
         suspense.isHydrating = false
         suspense.activeBranch = pendingBranch
       } else {
-        unmount(pendingBranch, parentComponent, suspense)
+        unmount(pendingBranch, parentComponent, suspense) //在keepalive中，pendingBranch是被移到隐藏容器中
       }
       // increment pending ID. this is used to invalidate async callbacks
       // reset suspense state
@@ -325,6 +325,7 @@ function patchSuspense(
       if (suspense.pendingId > 0) suspense.pendingId-- //旧default已经pending完(因为pendingBranch==null)，所以必须--
 
       //先把正在pending的ssContent，patch到off-dom容器中整备,vue的策略:先让原先的激活分支（activeBranch）顶上不变,然后再根据deps的情况，进行resolve
+      //这里会进行挂载流程，所以会让suspenseId=pendingId
       patch(
         null,
         newBranch,
