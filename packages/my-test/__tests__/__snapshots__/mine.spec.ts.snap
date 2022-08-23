@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`my test 测试快照 data1 1`] = `
+Object {
+  "age": 26,
+  "name": "Jsoning",
+  "time": "2020.1.1",
+}
+`;
+
+exports[`my test 测试快照 data3 1`] = `
+Object {
+  "age": 26,
+  "name": "Jsoning",
+  "time": Any<Date>,
+}
+`;

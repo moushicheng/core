@@ -8,7 +8,7 @@ This package contains lower level utilities that you can use if you are writing 
 
 ## API
 
-The API is intentionally low-level due to the various considerations when integrating Vue SFCs in a build system:
+The API is intentionally[故意的] low-level due to[由于] the various considerations when integrating[整合] Vue SFCs in a build system:
 
 - Separate hot-module replacement (HMR) for script, template and styles
 
@@ -20,6 +20,8 @@ The API is intentionally low-level due to the various considerations when integr
 - In some cases, transformers of each block in an SFC do not share the same execution context. For example, when used with `thread-loader` or other parallelized configurations, the template sub-loader in `vue-loader` may not have access to the full SFC and its descriptor.
 
 The general idea is to generate a facade module that imports the individual blocks of the component. The trick is the module imports itself with different query strings so that the build system can handle each request as "virtual" modules:
+
+// facade提供了组件的单独块
 
 ```
                                   +--------------------+
@@ -67,7 +69,7 @@ export default script
 
 ### High Level Workflow
 
-1. In facade transform, parse the source into descriptor with the `parse` API and generate the above facade module code based on the descriptor;
+1. In facade transform, parse the source into descriptor with the `parse` API and generate the above facade module code based on the descriptor; 通过parse API 解析资源 ->生成descriptor，并且基于descriptor生成上述facade module的代码
 
 2. In script transform, use `compileScript` to process the script. This handles features like `<script setup>` and CSS variable injection. Alternatively, this can be done directly in the facade module (with the code inlined instead of imported), but it will require rewriting `export default` to a temp variable (a `rewriteDefault` convenience API is provided for this purpose) so additional options can be attached to the exported object.
 

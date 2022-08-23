@@ -74,7 +74,7 @@ describe('compiler: parse', () => {
       })
     })
 
-    test('text with interpolation which has `<`', () => {
+    test('text with interpolation[插入] which has `<`', () => {
       const ast = baseParse('some {{ a<b && c>d }} text')
       const text1 = ast.children[0] as TextNode
       const text2 = ast.children[2] as TextNode
@@ -167,7 +167,7 @@ describe('compiler: parse', () => {
     })
   })
 
-  describe('Interpolation', () => {
+  describe('Interpolation[篡改]', () => {
     test('simple interpolation', () => {
       const ast = baseParse('{{message}}')
       const interpolation = ast.children[0] as InterpolationNode
