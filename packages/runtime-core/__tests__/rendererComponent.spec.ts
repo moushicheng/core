@@ -373,4 +373,39 @@ describe('renderer: component', () => {
     await nextTick()
     expect(serializeInner(root)).toBe(`value=false`)
   })
+
+  test('my2', async () => {
+    const name = ref(0)
+    let count=0;
+    const App = {
+      setup() {
+        return () => {
+          return [
+            h('div', {
+              name:name.value,
+            },h(Child)),
+          ]
+        }
+      }
+    }
+    const Child = {
+
+      setup(){
+        return ()=>{
+          return h('div','child'+count++)
+        }
+      }
+    }
+
+  
+
+    const root = nodeOps.createElement('div')
+    render(h(App), root)
+    expect(serializeInner(root)).toBe(`<div name=0><div>child0</div></div>`)
+
+    name.value=1;
+    await nextTick()
+    expect(serializeInner(root)).toBe(`<div name=1><div>child0</div></div>`)
+  })
+
 })

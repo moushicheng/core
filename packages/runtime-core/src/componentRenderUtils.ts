@@ -341,7 +341,7 @@ export function shouldUpdateComponent(
   if (nextVNode.dirs || nextVNode.transition) {
     return true
   }
-
+// optimized = __DEV__ && isHmrUpdating ? false : !!n2.dynamicChildren
   if (optimized && patchFlag >= 0) {
     if (patchFlag & PatchFlags.DYNAMIC_SLOTS) {
       // slot content that references values that might have changed,

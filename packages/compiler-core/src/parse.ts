@@ -159,6 +159,7 @@ function parseChildren(
         // '{{'
         node = parseInterpolation(context, mode)
       } else if (mode === TextModes.DATA && s[0] === '<') {
+        //处于：tag-open state
         // https://html.spec.whatwg.org/multipage/parsing.html#tag-open-state
         if (s.length === 1) {
           emitError(context, ErrorCodes.EOF_BEFORE_TAG_NAME, 1)
@@ -247,7 +248,7 @@ function parseChildren(
         pushNode(nodes, node[i])
       }
     } else {
-      pushNode(nodes, node)
+      pushNode(nodes, node) //nodes.push(node),如果node是文本节点，则
     }
   }
 
@@ -500,7 +501,7 @@ const isSpecialTemplateDirective = /*#__PURE__*/ makeMap(
 )
 
 /**
- * Parse a tag (E.g. `<div id=a>`) with that type (start tag or end tag).
+ * Parse a tag (E.g. `<div id=a>`) with that type (start tag or end tag). 解析开始和结束标签
  */
 function parseTag(
   context: ParserContext,
@@ -529,8 +530,8 @@ function parseTag(
   const tag = match[1]
   const ns = context.options.getNamespace(tag, parent)
 
-  advanceBy(context, match[0].length)
-  advanceSpaces(context)
+  advanceBy(context, match[0].length) //消费+更新pos
+  advanceSpaces(context) //消费\t\r\n\f 
 
   // save current state in case we need to re-parse attributes with v-pre
   const cursor = getCursor(context)
@@ -756,10 +757,12 @@ function parseAttribute(
   }
   nameSet.add(name)
 
+  //以下都是对属性名称的错误处理
   if (name[0] === '=') {
     emitError(context, ErrorCodes.UNEXPECTED_EQUALS_SIGN_BEFORE_ATTRIBUTE_NAME)
   }
   {
+
     const pattern = /["'<]/g
     let m: RegExpExecArray | null
     while ((m = pattern.exec(name))) {
@@ -770,23 +773,25 @@ function parseAttribute(
       )
     }
   }
-
+  
+  //消费属性名
   advanceBy(context, name.length)
 
-  // Value
+  // Value 获取属性的value
   let value: AttributeValue = undefined
 
   if (/^[\t\r\n\f ]*=/.test(context.source)) {
-    advanceSpaces(context)
-    advanceBy(context, 1)
-    advanceSpaces(context)
+    advanceSpaces(context) //消费等号前空格
+    advanceBy(context, 1) //消费等号
+    advanceSpaces(context) //消费等号后空格
     value = parseAttributeValue(context)
     if (!value) {
       emitError(context, ErrorCodes.MISSING_ATTRIBUTE_VALUE)
     }
   }
-  const loc = getSelection(context, start)
-
+  const loc = getSelection(context, start) //getSelection获取[start,context.loc]之间的loc， 意为获取选择区间的位置。
+   
+  //对名称做额外处理，因为vue有 v-name(指令),:name(v-bind),@name(v-on),#name 插槽等各式各样的指令语法
   if (!context.inVPre && /^(v-[A-Za-z0-9-]|:|\.|@|#)/.test(name)) {
     const match =
       /(?:^v-([a-z0-9-]+))?(?:(?::|^\.|^@|^#)(\[[^\]]+\]|[^\.]+))?(.+)?$/i.exec(
@@ -922,11 +927,11 @@ function parseAttributeValue(context: ParserContext): AttributeValue {
   const start = getCursor(context)
   let content: string
 
-  const quote = context.source[0]
+  const quote = context.source[0] //quote[引号]
   const isQuoted = quote === `"` || quote === `'`
   if (isQuoted) {
     // Quoted value.
-    advanceBy(context, 1)
+    advanceBy(context, 1)//消费前”
 
     const endIndex = context.source.indexOf(quote)
     if (endIndex === -1) {
@@ -936,8 +941,8 @@ function parseAttributeValue(context: ParserContext): AttributeValue {
         TextModes.ATTRIBUTE_VALUE
       )
     } else {
-      content = parseTextData(context, endIndex, TextModes.ATTRIBUTE_VALUE)
-      advanceBy(context, 1)
+      content = parseTextData(context, endIndex, TextModes.ATTRIBUTE_VALUE) 
+      advanceBy(context, 1) //消费后“
     }
   } else {
     // Unquoted
@@ -1041,6 +1046,7 @@ function parseTextData(
 ): string {
   const rawText = context.source.slice(0, length)
   advanceBy(context, length)
+  //处于RAWTEXT或CDATA下才能解析文本数据
   if (
     mode === TextModes.RAWTEXT ||
     mode === TextModes.CDATA ||
@@ -1082,10 +1088,11 @@ function startsWith(source: string, searchString: string): boolean {
   return source.startsWith(searchString)
 }
 
+//1. 更新pos位置 2.消费source
 function advanceBy(context: ParserContext, numberOfCharacters: number): void {
   const { source } = context
   __TEST__ && assert(numberOfCharacters <= source.length)
-  advancePositionWithMutation(context, source, numberOfCharacters)
+  advancePositionWithMutation(context, source, numberOfCharacters) //更新pos位置
   context.source = source.slice(numberOfCharacters)
 }
 
