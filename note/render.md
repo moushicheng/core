@@ -1,14 +1,8 @@
-组件挂载流程
-
-1.父组件更新，子组件会更新吗（子组件并不需要更新的情况下）？
-- 结论1：会patch新旧子组件的vnode
-- 结论2：新旧子组件patch会被shouldUpdateComponent截断，避免重复渲染
-对于shouldUpdateComponent
-- 结论1，如果子组件有 directive or transition则返回true
-- 结论2, 子组件的dynamicChildren存在
-  - 判断PatchFlag.DYNAMIC_SLOTS，直接返回true
-  - PatchFlags.FULL_PROPS，进一步判断
-  - PatchFlags.PROPS，进一步判断
-- 结论3， 子组件的dynamicChildren不存在(只有手动编写render会进入此分支),
-  - 比较新旧子vnode上的children是否存在$table，存在则返回true
-  - 然后，比较props是否需要更新，如果需要则返回true，不需要则返回false
+# 渲染策略
+1. template静态分析后会有动态分析功能，其带来几个好处，
+- 一是利用block拍平深层vnode更新，一步到位
+- 静态推断更新类型标记PathFlag，尽量在dom patch的过程中略过不必要的更新判断
+2. 如果直接使用render来渲染组件，则没有上述好处，因为render极其灵活导致不像template模板一样好静态分析。
+3. 二者共通的渲染策略：ShapeFlags，在编译期分析vnode类型，在patch的时候直接进入ShapeFlags相关的分支进行单独处理，比如  
+  1. shapeFlag & ShapeFlags.ELEMENT，就会执行  processElement
+  2. shapeFlag & ShapeFlags.COMPONENT 就会执行 processComponent

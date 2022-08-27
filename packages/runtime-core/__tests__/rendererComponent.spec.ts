@@ -380,16 +380,13 @@ describe('renderer: component', () => {
     const App = {
       setup() {
         return () => {
-          return [
-            h('div', {
+          return h('div', {
               name:name.value,
-            },h(Child)),
-          ]
+            },h(Child))
         }
       }
     }
     const Child = {
-
       setup(){
         return ()=>{
           return h('div','child'+count++)
