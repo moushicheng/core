@@ -413,7 +413,9 @@ export function traverseNode(
   // apply transform plugins
   const { nodeTransforms } = context
   const exitFns = []
+  //nodeTransforms貌似是一种插件机制，貌似跟switch case差不多，只是一种解耦
   for (let i = 0; i < nodeTransforms.length; i++) {
+    // onExit的含义貌似是后处理函数?用于节点回流?时后处理
     const onExit = nodeTransforms[i](node, context)
     if (onExit) {
       if (isArray(onExit)) {

@@ -114,7 +114,7 @@ class RefImpl<T> {
   }
 
   get value() {
-    trackRefValue(this)
+    trackRefValue(this) //依赖收集，直接ref.dep.push(activeEffect)
     return this._value
   }
 
@@ -125,7 +125,7 @@ class RefImpl<T> {
     if (hasChanged(newVal, this._rawValue)) {
       this._rawValue = newVal
       this._value = useDirectValue ? newVal : toReactive(newVal)
-      triggerRefValue(this, newVal)
+      triggerRefValue(this, newVal) //触发依赖更新
     }
   }
 }

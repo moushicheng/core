@@ -199,7 +199,7 @@ function createReactiveObject(
   ) {
     return target
   }
-  // target already has corresponding Proxy
+  // target already has corresponding Proxy 这是一种缓存机制
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {
     return existingProxy
