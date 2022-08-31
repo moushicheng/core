@@ -191,6 +191,7 @@ function createReactiveObject(
     }
     return target
   }
+  // 如果target已经被响应化了，则直接返回。
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (
@@ -199,7 +200,7 @@ function createReactiveObject(
   ) {
     return target
   }
-  // target already has corresponding Proxy 这是一种缓存机制
+  // target already has corresponding Proxy 这是一种缓存机制，proxyMap缓存所有响应式变量
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {
     return existingProxy
@@ -213,7 +214,7 @@ function createReactiveObject(
     target,
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers
   )
-  proxyMap.set(target, proxy)
+  proxyMap.set(target, proxy) //设置ProxyMap缓存
   return proxy
 }
 

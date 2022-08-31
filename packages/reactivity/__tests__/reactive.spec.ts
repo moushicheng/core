@@ -7,6 +7,8 @@ describe('reactivity/reactive', () => {
   test('Object', () => {
     const original = { foo: 1 }
     const observed = reactive(original)
+    const o = reactive(observed)
+    expect(o).toBe(observed)
     expect(observed).not.toBe(original)
     expect(isReactive(observed)).toBe(true)
     expect(isReactive(original)).toBe(false)
