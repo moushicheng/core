@@ -49,7 +49,7 @@ describe('compiler: v-for', () => {
   describe('transform', () => {
     test('number expression', () => {
       const { node: forNode } = parseWithForTransform(
-        '<span v-for="index in 5" />'
+        '<span v-for="index in 5" v-if="false" />'
       )
       expect(forNode.keyAlias).toBeUndefined()
       expect(forNode.objectIndexAlias).toBeUndefined()

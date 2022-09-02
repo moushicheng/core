@@ -784,7 +784,7 @@ function parseAttribute(
     advanceSpaces(context) //消费等号前空格
     advanceBy(context, 1) //消费等号
     advanceSpaces(context) //消费等号后空格
-    value = parseAttributeValue(context)
+    value = parseAttributeValue(context) //获取属性值，并且在里面也advance了
     if (!value) {
       emitError(context, ErrorCodes.MISSING_ATTRIBUTE_VALUE)
     }
