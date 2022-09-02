@@ -439,7 +439,7 @@ function parseElement(
 
   // Children.
   ancestors.push(element)
-  const mode = context.options.getTextMode(element, parent)
+  const mode = context.options.getTextMode(element, parent) // TextModes.DATA=0
   const children = parseChildren(context, mode, ancestors)
   ancestors.pop()
 

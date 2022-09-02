@@ -14,7 +14,7 @@ const observed = reactive(original)
 1. get 的依赖收集如何？
 2. set 如何触发依赖？
 3. 深度响应如何做？
-5. 除了 get，set 还对哪些原子操作进行了代理？
+4. 除了 get，set 还对哪些原子操作进行了代理？
    下面我们就来一一解答
 
 ### Get
