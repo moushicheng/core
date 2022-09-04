@@ -175,7 +175,7 @@ function createStructuralDirectiveTransform(
   }
 }
 ```
-createStructuralDirectiveTransform 只是更好地封装了fn回调，传递了node(当前节点ast)，prop（当前属性ast）
+createStructuralDirectiveTransform 只是更好地封装了fn回调，传递了node(当前节点ast)，prop（当前属性ast）,fn的作用是处理节点，生成codegen
 看看v-if的fn回调
 ```javascript
 function processIf(
@@ -247,13 +247,13 @@ function processIf(
     )
     return
   }
-
+//对表达式进行解析，提取解析xxx in xxx 左右两边的部分
   const parseResult = parseForExpression(
     // can only be simple expression because vFor transform is applied
     // before expression transform.
     dir.exp as SimpleExpressionNode,
     context
-  )
+  ) 
 
   if (!parseResult) {
     context.onError(
@@ -264,7 +264,7 @@ function processIf(
 
   const { addIdentifiers, removeIdentifiers, scopes } = context
   const { source, value, key, index } = parseResult
-
+  //生成forNode
   const forNode: ForNode = {
     type: NodeTypes.FOR,
     loc: dir.loc,
@@ -301,3 +301,67 @@ function processIf(
   }
 }
 ```
+首先看这,其对v-for的表达式进行了解析，解析(value,key) in source,将source, value, key, index 解析出来供forNode生成使用
+```javascript
+ const parseResult = parseForExpression(
+    // can only be simple expression because vFor transform is applied
+    // before expression transform.
+    dir.exp as SimpleExpressionNode,
+    context
+  ) 
+```
+然后生成forNode,注意children，我们会发现这里与原node 父子关系逆转
+```javascript
+  const forNode: ForNode = {
+    type: NodeTypes.FOR,
+    loc: dir.loc,
+    source,
+    valueAlias: value,
+    keyAlias: key,
+    objectIndexAlias: index,
+    parseResult,
+    children: isTemplateNode(node) ? node.children : [node]
+  }
+```
+也就是说现在的层级关系是
+```
+
+-原root
+ -IfNode
+  -ForNode
+   -span ast
+```
+然后便执行回调
+```javascript
+ return processFor(node, dir, context, forNode => {
+      // create the loop render function expression now, and add the
+      // iterator on exit after all children have been traversed
+      // 现在创建循环渲染函数表达式，并在遍历所有子函数后在退出时添加迭代器
+      const renderExp = createCallExpression(helper(RENDER_LIST), [
+        forNode.source
+      ]) as ForRenderListExpression
+
+      //...
+      //生成真codegen
+      forNode.codegenNode = createVNodeCall(
+        context,
+        helper(FRAGMENT),
+        undefined,
+        renderExp,
+        fragmentFlag +
+          (__DEV__ ? ` /* ${PatchFlagNames[fragmentFlag]} */` : ``), //注意这里，说明vue3是把for块看做一个fragmentFlag进行处理的
+        undefined,
+        undefined,
+        true /* isBlock */,
+        !isStableFragment /* disableTracking */,
+        false /* isComponent */,
+        node.loc
+      ) as ForCodegenNode
+
+      return () => {
+        // finish the codegen now that all children have been traversed
+        // 逃离函数 完成一些收尾工作
+    })
+```
+最后生成的codegenNode如下：↓
+![image-20220904110350092](C:\Users\moush\AppData\Roaming\Typora\typora-user-images\image-20220904110350092.png)

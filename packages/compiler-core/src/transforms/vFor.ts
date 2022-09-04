@@ -53,6 +53,7 @@ export const transformFor = createStructuralDirectiveTransform(
   'for',
   (node, dir, context) => {
     const { helper, removeHelper } = context
+    //processXXX的回调一般专门用来处理codegen
     return processFor(node, dir, context, forNode => {
       // create the loop render function expression now, and add the
       // iterator on exit after all children have been traversed
@@ -280,7 +281,7 @@ export function processFor(
     keyAlias: key,
     objectIndexAlias: index,
     parseResult,
-    children: isTemplateNode(node) ? node.children : [node]
+    children: isTemplateNode(node) ? node.children : [node] //父子关系逆转
   }
 
   context.replaceNode(forNode)

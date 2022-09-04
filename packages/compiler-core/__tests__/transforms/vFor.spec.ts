@@ -41,16 +41,17 @@ function parseWithForTransform(
   })
   return {
     root: ast,
-    node: ast.children[0] as ForNode & { codegenNode: ForCodegenNode }
+    node: ast.children[0] as any
   }
 }
 
 describe('compiler: v-for', () => {
   describe('transform', () => {
     test('number expression', () => {
-      const { node: forNode } = parseWithForTransform(
-        '<span v-for="index in 5" v-if="false" />'
+      const { node: ifNode } = parseWithForTransform(
+        '<span v-for="index in 5" v-if="true" />'
       )
+      const forNode=ifNode.branches[0].children[0]
       expect(forNode.keyAlias).toBeUndefined()
       expect(forNode.objectIndexAlias).toBeUndefined()
       expect((forNode.valueAlias as SimpleExpressionNode).content).toBe('index')
