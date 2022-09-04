@@ -428,7 +428,8 @@ export function traverseNode(
       return
     } else {
       // node may have been replaced
-      node = context.currentNode
+      //注意这里，如果transfrom对context.currentNode有改动，就会传递新的node给下一次遍历(节点递交)
+      node = context.currentNode 
     }
   }
 
@@ -468,7 +469,7 @@ export function traverseNode(
     exitFns[i]()
   }
 }
-
+//v-if和v-for都由此创建
 export function createStructuralDirectiveTransform(
   name: string | RegExp,
   fn: StructuralDirectiveTransform
@@ -492,7 +493,7 @@ export function createStructuralDirectiveTransform(
           // structural directives are removed to avoid infinite recursion
           // also we remove them *before* applying so that it can further
           // traverse itself in case it moves the node around
-          props.splice(i, 1)
+          props.splice(i, 1) //削去正在处理的props
           i--
           const onExit = fn(node, prop, context)
           if (onExit) exitFns.push(onExit)

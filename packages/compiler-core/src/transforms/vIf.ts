@@ -112,14 +112,16 @@ export function processIf(
   }
 
   if (dir.name === 'if') {
-    const branch = createIfBranch(node, dir)
-    const ifNode: IfNode = {
+    const branch = createIfBranch(node, dir) //形成branch结构
+    const ifNode: IfNode = { //利用branch生成ifNode
       type: NodeTypes.IF,
       loc: node.loc,
       branches: [branch]
     }
-    context.replaceNode(ifNode)
-    if (processCodegen) {
+    //用ifNode替换parent ast中的node（在同样的位置）
+    //这里我们可以感受到，transfrom就是把规格工整的原ast 转换成 最小信息量 且语义明确的JavaScript ast
+    context.replaceNode(ifNode) //  context.parent.children[context.childIndex] = context.currentNode = node
+    if (processCodegen) { //v-if最终会进入这里
       return processCodegen(ifNode, branch, true)
     }
   } else {
@@ -210,11 +212,13 @@ export function processIf(
 
 function createIfBranch(node: ElementNode, dir: DirectiveNode): IfBranchNode {
   const isTemplateIf = node.tagType === ElementTypes.TEMPLATE
+
   return {
-    type: NodeTypes.IF_BRANCH,
+    type: NodeTypes.IF_BRANCH, //if的一条分支
     loc: node.loc,
     condition: dir.name === 'else' ? undefined : dir.exp,
-    children: isTemplateIf && !findDir(node, 'for') ? node.children : [node],
+    //普通节点的v-if和node本来是平级的，但是现在呢，变成了父子关系
+    children: isTemplateIf && !findDir(node, 'for') ? node.children : [node],  
     userKey: findProp(node, `key`),
     isTemplateIf
   }

@@ -27,17 +27,31 @@
 
 ## 提问 
 ### 父组件更新，子组件会更新吗（子组件并不需要更新的情况下）？
+```javascript
+const updateComponent = (n1: VNode, n2: VNode, optimized: boolean) => {
+    const instance = (n2.component = n1.component)!
+    if (shouldUpdateComponent(n1, n2, optimized)) {
+        instance.next = n2
+        invalidateJob(instance.update)
+        instance.update() //更新子组件
+    } else {
+      // no update needed. just copy over properties
+      n2.el = n1.el
+      instance.vnode = n2
+    }
+  }
+```
 - 结论1：会patch新旧子组件的vnode
 - 结论2：新旧子组件patch会被shouldUpdateComponent截断，避免重复渲染
-对于shouldUpdateComponent
+对于shouldUpdateComponent,返回true则更新，返回false则截断
 - 结论1，如果子组件有 directive or transition则返回true
 - 结论2, 子组件的dynamicChildren存在
   - 判断PatchFlag.DYNAMIC_SLOTS，直接返回true
-  - PatchFlags.FULL_PROPS，进一步判断
+  - PatchFlags.FULL_PROPS，进一步判断，返回 hasPropsChanged(prevProps, nextProps!, emits)（检查props更新，需要则true，不需要则false）
   - PatchFlags.PROPS，进一步判断
 - 结论3， 子组件的dynamicChildren不存在(只有手动编写render会进入此分支),
   - 比较新旧子vnode上的children是否存在$table，存在则返回true
-  - 然后，比较props是否需要更新，如果需要则返回true，不需要则返回false
+  - 然后，返回hasPropsChanged(prevProps, nextProps!, emits)（检查props更新）
 
 ### 组件的挂载流程?
 1. 获得组件的vnode节点，将vnode置于render中执行渲染。
