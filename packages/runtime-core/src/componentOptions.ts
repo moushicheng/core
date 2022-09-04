@@ -556,6 +556,7 @@ export function applyOptions(instance: ComponentInternalInstance) {
 
   // call beforeCreate first before accessing other options since
   // the hook may mutate resolved options (#2791)
+  //这里调用了生命周期hook
   if (options.beforeCreate) {
     callHook(options.beforeCreate, instance, LifecycleHooks.BEFORE_CREATE)
   }

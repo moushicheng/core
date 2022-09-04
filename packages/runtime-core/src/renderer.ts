@@ -1563,7 +1563,7 @@ function baseCreateRenderer(
       () => queueJob(update),
       instance.scope // track it in component's effect scope
     ))
-
+//这里奠定了instance.update函数，后续组件更新就会执行 () => effect.run()
     const update: SchedulerJob = (instance.update = () => effect.run())
     update.id = instance.uid
     // allowRecurse
