@@ -381,6 +381,7 @@ function baseCreateRenderer(
     const { type, ref, shapeFlag } = n2
     switch (type) {
       case Text:
+        //bug:container和n1上的container可能不一样。（经过v-if之后父容器丢失）
         processText(n1, n2, container, anchor)
         break
       case Comment:
@@ -478,6 +479,10 @@ function baseCreateRenderer(
     } else {
       const el = (n2.el = n1.el!)
       if (n2.children !== n1.children) {
+        //n2是文本节点 
+        //n2.el.textContent会更新成'1'，但n2的parentElement.textContent不会更新成'1'，这可能是一个bug
+        // 产生bug的原因：这里更新的是el，但el不是当前展示容器的子文本节点。
+        // 即容器丢失，为什么会丢失呢，很神秘
         hostSetText(el, n2.children as string)
       }
     }
@@ -837,7 +842,7 @@ function baseCreateRenderer(
       patchBlockChildren(
         n1.dynamicChildren!,
         dynamicChildren,
-        el,
+        el, //n1.el
         parentComponent,
         parentSuspense,
         areChildrenSVG,
@@ -955,7 +960,7 @@ function baseCreateRenderer(
   const patchBlockChildren: PatchBlockChildrenFn = (
     oldChildren,
     newChildren,
-    fallbackContainer,
+    fallbackContainer, //oldChildren.el
     parentComponent,
     parentSuspense,
     isSVG,
@@ -2170,6 +2175,7 @@ function baseCreateRenderer(
           invokeDirectiveHook(vnode, null, parentComponent, 'unmounted')
       }, parentSuspense)
     }
+    vnode.children=null;
   }
 
   const remove: RemoveFn = vnode => {
@@ -2202,6 +2208,7 @@ function baseCreateRenderer(
 
     const performRemove = () => {
       hostRemove(el!)
+      
       if (transition && !transition.persisted && transition.afterLeave) {
         transition.afterLeave()
       }
