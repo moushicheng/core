@@ -2136,6 +2136,7 @@ function baseCreateRenderer(
           false,
           true
         )
+        vnode.dynamicChildren=[];
       } else if (
         (type === Fragment &&
           patchFlag &
@@ -2143,6 +2144,7 @@ function baseCreateRenderer(
         (!optimized && shapeFlag & ShapeFlags.ARRAY_CHILDREN)
       ) {
         unmountChildren(children as VNode[], parentComponent, parentSuspense)
+        vnode.children=[];
       }
 
       if (doRemove) {
