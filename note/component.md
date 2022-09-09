@@ -51,10 +51,10 @@ const updateComponent = (n1: VNode, n2: VNode, optimized: boolean) => {
   - 比较新旧子vnode上的children是否存在$table，存在则返回true
   - 然后，返回hasPropsChanged(prevProps, nextProps!, emits)（检查props更新）
 
-### 组件的挂载流程?
+### 组件的挂载流程?(问patch)
 1. 获得组件的vnode节点，将vnode置于render中执行渲染。
 2. render时根据shapeFlag & ShapeFlags.ELEMENT,走到组件对应的更新分支，执行processComponent
 3. 在processComponent中根据有无旧vnode，执行了mountComponent  
 4. 在mountComponent内部，执行setup函数，获取render
-5. 安装render函数，一来是使其封装成componentUpdateFn方便后续更新，二来是将componentUpdateFn被ref侦测（放入ReactiveEffect执行，这就涉及响应式原理了）
+5. 安装render函数，一来是使其封装成componentUpdateFn方便后续更新，二来是将componentUpdateFn被ref侦测（放入ReactiveEffect(相当于放入effect)执行，effect会将componentUpdateFn赋予全局activeEffect，便于get捕获）
 6. 执行componentUpdateFn，其核心流程就是执行vnode.render获取新vnode，然后和旧vnode进行patch,（至于如何patch，这又是一个大话题，详细见render.md）

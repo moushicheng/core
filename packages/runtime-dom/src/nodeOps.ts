@@ -89,6 +89,7 @@ export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
         if (start === end || !(start = start!.nextSibling)) break
       }
     } else {
+      // @mark，修改锚点一
       // fresh insert
       templateContainer.innerHTML = isSVG ? `<svg>${content}</svg>` : content
       const template = templateContainer.content

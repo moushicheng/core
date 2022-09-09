@@ -622,5 +622,37 @@ describe('compiler: hoistStatic transform', () => {
       expect(root.hoists.length).toBe(2)
       expect(generate(root).code).toMatchSnapshot()
     })
+    test('should hoist elements with boolean attribute',()=>{
+      const root=transformWithHoist(
+        `<div>
+        <button :disabled="false">enable</button>
+        <button :disabled="true">enable</button>
+          <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>          
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          </ul>
+        </div>`
+      )
+      const renderFn=generate(root,{
+        prefixIdentifiers:false,
+      })
+      expect(typeof(renderFn)).toBe('object');
+      expect(root.hoists.length).toBe(3)
+    })
   })
 })

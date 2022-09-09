@@ -34,6 +34,7 @@ export function patchAttr(
     // corresponding dom prop of the same name here.
     const isBoolean = isSpecialBooleanAttr(key)
     if (value == null || (isBoolean && !includeBooleanAttr(value))) {
+      //value==null或者是布尔为false或者null的特殊布尔属性，则移除
       el.removeAttribute(key)
     } else {
       el.setAttribute(key, isBoolean ? '' : value)

@@ -22,10 +22,13 @@ export const patchProp: DOMRendererOptions['patchProp'] = (
   unmountChildren
 ) => {
   if (key === 'class') {
+    //处理calss
     patchClass(el, nextValue, isSVG)
   } else if (key === 'style') {
+    //处理style
     patchStyle(el, prevValue, nextValue)
   } else if (isOn(key)) {
+    //处理on(事件)
     // ignore v-model listeners
     if (!isModelListener(key)) {
       patchEvent(el, key, prevValue, nextValue, parentComponent)
@@ -37,6 +40,7 @@ export const patchProp: DOMRendererOptions['patchProp'] = (
       ? ((key = key.slice(1)), false)
       : shouldSetAsProp(el, key, nextValue, isSVG)
   ) {
+    //处理. ^ innerHtml textContent on
     patchDOMProp(
       el,
       key,
