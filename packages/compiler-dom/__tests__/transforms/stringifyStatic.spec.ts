@@ -409,6 +409,28 @@ describe('stringify static html', () => {
       ]
     })
   })
+  test('should remove boolean attribure for false', () => {
+    const { ast } = compileWithStringify(
+      `<button :disabled="false">enable</button>${repeat(
+        `<div></div>`,
+        StringifyThresholds.NODE_COUNT
+      )}`
+    )
+    console.log(ast)
+    expect(ast.hoists[0]).toMatchObject({
+      type: NodeTypes.JS_CALL_EXPRESSION,
+      callee: CREATE_STATIC,
+      arguments: [
+        JSON.stringify(
+          `<button>enable</button>${repeat(
+            `<div></div>`,
+            StringifyThresholds.NODE_COUNT
+          )}`
+        ),
+        '21'
+      ]
+    })
+  })
 
   test('should stringify svg', () => {
     const svg = `<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">`
