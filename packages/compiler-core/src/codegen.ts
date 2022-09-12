@@ -121,7 +121,7 @@ function createCodegenContext(
     column: 1,
     line: 1,
     offset: 0,
-    indentLevel: 0,
+    indentLevel: 0, //缩进级别
     pure: false,
     map: undefined,
     helper(key) {
@@ -146,7 +146,7 @@ function createCodegenContext(
         }
       }
     },
-    indent() {
+    indent() { //缩进
       newline(++context.indentLevel)
     },
     deindent(withoutNewLine = false) {
@@ -156,7 +156,7 @@ function createCodegenContext(
         newline(--context.indentLevel)
       }
     },
-    newline() {
+    newline() { //增加\n和缩进
       newline(context.indentLevel)
     }
   }
@@ -196,7 +196,7 @@ export function generate(
   } = {}
 ): CodegenResult {
   const context = createCodegenContext(ast, options)
-  if (options.onContextCreated) options.onContextCreated(context)
+  if (options.onContextCreated) options.onContextCreated(context) //某个生命周期(?
   const {
     mode,
     push,
@@ -220,7 +220,7 @@ export function generate(
     ? createCodegenContext(ast, options)
     : context
   if (!__BROWSER__ && mode === 'module') {
-    genModulePreamble(ast, preambleContext, genScopeId, isSetupInlined)
+    genModulePreamble(ast, preambleContext, genScopeId, isSetupInlined) //引入依赖项
   } else {
     genFunctionPreamble(ast, preambleContext)
   }
@@ -239,9 +239,9 @@ export function generate(
   if (isSetupInlined) {
     push(`(${signature}) => {`)
   } else {
-    push(`function ${functionName}(${signature}) {`)
+    push(`function ${functionName}(${signature}) {`) //生成函数头
   }
-  indent()
+  indent() //缩进 
 
   if (useWithBlock) {
     push(`with (_ctx) {`)
@@ -290,6 +290,7 @@ export function generate(
     push(`return `)
   }
   if (ast.codegenNode) {
+  //核心，生成vnode代码
     genNode(ast.codegenNode, context)
   } else {
     push(`null`)
@@ -408,6 +409,7 @@ function genModulePreamble(
           .join(', ')}\n`
       )
     } else {
+      //引入必要依赖 
       push(
         `import { ${ast.helpers
           .map(s => `${helperNameMap[s]} as _${helperNameMap[s]}`)
