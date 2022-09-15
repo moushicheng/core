@@ -44,11 +44,12 @@ export const vModelText: ModelDirective<
   HTMLInputElement | HTMLTextAreaElement
 > = {
   created(el, { modifiers: { lazy, trim, number } }, vnode) {
-    el._assign = getModelAssigner(vnode)
+    el._assign = getModelAssigner(vnode) //就是这个assign是this.value=value，这里完成了domValue->refValue的操作
     const castToNumber =
       number || (vnode.props && vnode.props.type === 'number')
+    //input事件在输入框输入的时候回实时响应并触发,change在失去焦点才触发
     addEventListener(el, lazy ? 'change' : 'input', e => {
-      if ((e.target as any).composing) return
+      if ((e.target as any).composing) return //输入中文时，就不要再一直触发input事件了
       let domValue: string | number = el.value
       if (trim) {
         domValue = domValue.trim()
@@ -70,6 +71,7 @@ export const vModelText: ModelDirective<
       // switching focus before confirming composition choice
       // this also fixes the issue where some browsers e.g. iOS Chrome
       // fires "change" instead of "input" on autocomplete.
+      //失去焦点时，再触发一下change事件,这是为了配合中文输入
       addEventListener(el, 'change', onCompositionEnd)
     }
   },
@@ -294,6 +296,7 @@ function callModelHook(
   prevVNode: VNode | null,
   hook: keyof ObjectDirective
 ) {
+  //get fns
   const modelToUse = resolveDynamicModel(
     el.tagName,
     vnode.props && vnode.props.type
