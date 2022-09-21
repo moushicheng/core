@@ -19,6 +19,8 @@ import {
   serializeInner,
   h
 } from '@vue/runtime-test'
+import { baseCompile } from '@vue/compiler-core'
+
 
 describe('my test', () => {
   test('测试快照 data1', () => {
