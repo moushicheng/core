@@ -698,6 +698,7 @@ function setupStatefulComponent(
         )
       }
     } else {
+      //handleSetupResult会处理生命周期BeforeCreate 和 created
       handleSetupResult(instance, setupResult, isSSR)
     }
   } else {
