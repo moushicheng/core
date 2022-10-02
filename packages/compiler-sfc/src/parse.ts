@@ -125,6 +125,7 @@ export function parse(
   }
 
   const errors: (CompilerError | SyntaxError)[] = []
+  //将标签 转换成  html ast (解析标签
   const ast = compiler.parse(source, {
     // there are no components at SFC parsing level
     isNativeTag: () => true,

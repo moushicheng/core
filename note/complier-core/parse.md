@@ -1,7 +1,5 @@
-1. parse是html解析器，
+1. parse是标签解析器，可以是template styles script ，
 2. html -> ast
-
-
 流程:
 ```javascript 
 function baseParse(
