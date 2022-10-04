@@ -381,7 +381,6 @@ function baseCreateRenderer(
     const { type, ref, shapeFlag } = n2
     switch (type) {
       case Text:
-        //bug:container和n1上的container可能不一样。（经过v-if之后父容器丢失）
         processText(n1, n2, container, anchor)
         break
       case Comment:

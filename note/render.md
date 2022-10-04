@@ -97,3 +97,137 @@
   其从而何来？其实是编译器分析模板而来，这归功于模板的静态稳定性。
   具体如下：
 
+## patch行为
+根据新旧vnode会有不同的操作，n1是旧vnode，n2是新vnode
+首先，如果n1=n2，则直接返回
+```typescript
+   if (n1 === n2) {
+      return
+    }
+```
+如果n1存在，且n2不存在，则直接卸载
+```typescript
+if (n1 && !isSameVNodeType(n1, n2)) {
+      anchor = getNextHostNode(n1)
+      unmount(n1, parentComponent, parentSuspense, true)
+      n1 = null
+    }
+```
+然后根据n2.type执行不同的操作
+```typescript
+  switch (type) {
+      case Text:
+        processText(n1, n2, container, anchor)
+        break
+      case Comment:
+        processCommentNode(n1, n2, container, anchor)
+        break
+      case Static:
+        if (n1 == null) {
+          mountStaticNode(n2, container, anchor, isSVG)
+        } else if (__DEV__) {
+          patchStaticNode(n1, n2, container, isSVG)
+        }
+        break
+      case Fragment:
+        processFragment(n1,n2,container,anchor,parentComponent, parentSuspense, isSVG,slotScopeIds,optimized)
+        break
+      default:
+        if (shapeFlag & ShapeFlags.ELEMENT) {
+          processElement(//...同processFragment参数)
+        } else if (shapeFlag & ShapeFlags.COMPONENT) {
+          processComponent(//...同processFragment参数)
+        } else if (shapeFlag & ShapeFlags.TELEPORT) {
+          ;(type as typeof TeleportImpl).process(//...同processFragment参数)
+        } else if (__FEATURE_SUSPENSE__ && shapeFlag & ShapeFlags.SUSPENSE) {
+          ;(type as typeof SuspenseImpl).process(//...同processFragment参数)
+        } else if (__DEV__) {
+          warn('Invalid VNode type:', type, `(${typeof type})`)
+        }
+```
+这里挑典型来说明
+首先是processComponent，组件挂载/更新流程
+n1不存在，则mountComponent，看情况ShapeFlages来确定是否执行activate
+n1存在，则执行patchComponent
+```typescript
+const processComponent = (
+    n1: VNode | null,
+    n2: VNode,
+    container: RendererElement,
+    anchor: RendererNode | null,
+    parentComponent: ComponentInternalInstance | null,
+    parentSuspense: SuspenseBoundary | null,
+    isSVG: boolean,
+    slotScopeIds: string[] | null,
+    optimized: boolean
+  ) => {
+    n2.slotScopeIds = slotScopeIds
+    if (n1 == null) {
+      //为keepAlive量身定制的mount，要求该节点已经被缓存
+      if (n2.shapeFlag & ShapeFlags.COMPONENT_KEPT_ALIVE) {
+        ;(parentComponent!.ctx as KeepAliveContext).activate(
+          n2,
+          container,
+          anchor,
+          isSVG,
+          optimized
+        )
+      } else {
+        mountComponent(
+          n2,
+          container,
+          anchor,
+          parentComponent,
+          parentSuspense,
+          isSVG,
+          optimized
+        )
+      }
+    } else {
+      updateComponent(n1, n2, optimized)
+    }
+  }
+```
+对于mountComponent，有以下步骤:
+PS：源码有点复杂，就不贴了，这里可以算是一个导读
+1. 创建组件实例instance
+2. 执行setupComponent(instance) 得到setup返回的render函数,
+3. 将render 置入setupRenderEffect中执行
+1. setupRenderEffect执行时，将setup.render封装成componentUpdateFn（组件更新函数
+2. 组件更新函数componentUpdateFn被放入new ReactiveEffect中执行,此时被“effect”化，渲染函数内部的ref会将ReactiveEffect捕获以便完成数据绑定。
+componentUpdateFn详细介绍：
+1. 根据vnode.isMounted进行不同处理，如果已经挂载，就更新，没挂载就挂载。
+2. 执行renderComponentRoot返回subTree,renderComponentRoot是对render的一层封装，包含一些处理，比如区分组件类型来执行render
+3. 利用子树再进行新一轮patch(挂载或者更新)
+4. 这里的子树就是div的vnode，后续就是执行div的挂载了，不赘述
+
+对于updateComponent，就更简单了:
+组件可更新就执行instance.update函数，否则就直接保持原样
+对于instance.update()，实际上就是上面执行的componentUpdate函数。
+```typescript
+const updateComponent = (n1: VNode, n2: VNode, optimized: boolean) => {
+    const instance = (n2.component = n1.component)!
+    if (shouldUpdateComponent(n1, n2, optimized)) {
+      if (
+        __FEATURE_SUSPENSE__ &&
+        instance.asyncDep &&
+        !instance.asyncResolved
+      ) {
+        //...
+        return
+      } else {
+        // normal update
+        instance.next = n2
+        // in case the child component is also queued, remove it to avoid
+        // double updating the same child component in the same flush.
+        invalidateJob(instance.update)
+        // instance.update is the reactive effect.
+        instance.update() //在mountComponent，定义了该函数
+      }
+    } else {
+      // no update needed. just copy over properties
+      n2.el = n1.el
+      instance.vnode = n2
+    }
+  }
+```
