@@ -12,6 +12,7 @@
   1. black的数据结构如何？
   2. 怎么收集动态子vnode？
   3. 未来的某个时间，这些收集的动态子节点是如何更新的？
+
     有两个进阶问题：
   5. 遇到会变动dom结构的块会怎么样？
   6. *动态子节点的patchFlag是如何来的？
@@ -40,7 +41,29 @@
   1. block是一个数组，存放动态子节点，并被vnode.dynamicChildren所保存，以便后续使用。
 
   ### 怎么收集动态子vnode？
-  其核心逻辑位于createBaseVnode中
+  createBlock除了上面说的将当前currentBlock赋予vnode.dynamicChildren，其当然也还要创建vnode了
+  ```javascript
+  export function createBlock(
+    type: VNodeTypes | ClassComponent,
+    props?: Record<string, any> | null,
+    children?: any,
+    patchFlag?: number,
+    dynamicProps?: string[]
+  ): VNode {
+    return setupBlock(
+      createVNode(
+        type,
+        props,
+        children,
+        patchFlag,
+        dynamicProps,
+        true /* isBlock: prevent a block from tracking itself */
+      )
+    )
+  }
+  ```
+
+  对于vnode，关于block核心逻辑位于createVnode中
   ```javaScript
    // track vnode for block tree
   if (
@@ -91,6 +114,7 @@
 ![image-20220830092825166](C:\Users\moush\AppData\Roaming\Typora\typora-user-images\image-20220830092825166.png)
 
   2. v-for 很容易影响原来vnode结构，会导致单纯遍历更新dynamicChildren，会错失新增dom的更新  
+
     对于for，我们则直接用传统dom diff即可,在源码中则是给for对应的片段（Fragment）开放绿通道，用传统diff更新children，再更新其上的dynamicChildren（更深层的vnode）
   ### PatchFlag从何而来？
   先复习一下，PatchFlage是block手机动态子节点的***诱因***
@@ -230,4 +254,43 @@ const updateComponent = (n1: VNode, n2: VNode, optimized: boolean) => {
       instance.vnode = n2
     }
   }
+```
+## ShapeFlages如何而来？
+刚刚说了ShapeFlages,那你肯定会好奇ShapeFlages是怎么被vue分析出来的,其实直接看看createVnode就好了
+
+### 现象
+```Vue
+<template>
+  <Comp></Comp>
+</template>
+```
+这样的一个template模板
+最终会被编译成
+```javascript 
+const __sfc__ = {}
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+function render(_ctx, _cache) {
+  const _component_Comp = _resolveComponent("Comp")
+
+  return (_openBlock(), _createBlock(_component_Comp))
+}
+__sfc__.render = render
+__sfc__.__file = "App.vue"
+export default __sfc__
+```
+### 创建vnode
+createBlack就是创建Vnode的那个函数，其生成shapeFlag的核心逻辑如下，
+完全就是根据type来决定ShapeFlag嘛！
+```javascript
+  const shapeFlag = isString(type)
+    ? ShapeFlags.ELEMENT
+    : __FEATURE_SUSPENSE__ && isSuspense(type)
+    ? ShapeFlags.SUSPENSE
+    : isTeleport(type)
+    ? ShapeFlags.TELEPORT
+    : isObject(type)
+    ? ShapeFlags.STATEFUL_COMPONENT
+    : isFunction(type)
+    ? ShapeFlags.FUNCTIONAL_COMPONENT
+    : 0
 ```
