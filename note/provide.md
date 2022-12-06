@@ -9,7 +9,7 @@ export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
     }
   } else {
     //获取组件实例
-    let provides = currentInstance.provides
+    let provides = currentInstance.provides //instance在注册时，创建provides会取自父
     // by default an instance inherits its parent's provides object
     // but when it needs to provide values of its own, it creates its
     // own provides object using parent provides object as prototype.
@@ -19,6 +19,7 @@ export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
       currentInstance.parent && currentInstance.parent.provides
     
     if (parentProvides === provides) {
+      
         //原型链继承
       provides = currentInstance.provides = Object.create(parentProvides)
     }
@@ -28,6 +29,32 @@ export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
 }
 ```
 我们可以发现，provide这个API的关键思想就在于原型链继承，既保证了嵌套的组件provides关系，又不会防止了命名冲突。
+
+provides创建时机
+发现了吗，如果父实例有provides，就直接让子provides=父provides,
+instance被创建的时机是组件挂载时。也就是mountComponent时
+```javascript
+ const instance: ComponentInternalInstance = {
+    uid: uid++,
+    vnode,
+    type,
+    parent,
+    appContext,
+    root: null!, // to be immediately set
+    next: null,
+    subTree: null!, // will be set synchronously right after creation
+    effect: null!,
+    update: null!, // will be set synchronously right after creation
+    scope: new EffectScope(true /* detached */),
+    render: null,
+    proxy: null,
+    exposed: null,
+    exposeProxy: null,
+    withProxy: null,
+    provides: parent ? parent.provides : Object.create(appContext.provides),
+    //...
+ }
+```
 
 ## inject
 

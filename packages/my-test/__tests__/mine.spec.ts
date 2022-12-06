@@ -111,6 +111,7 @@ describe('my test', () => {
     )
 
     toggle()
+    await new Promise(r => setTimeout(r, 10))
     await nextTick()
 
     expect(serializeInner(root)).toBe(
