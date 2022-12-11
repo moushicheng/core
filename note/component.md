@@ -13,7 +13,7 @@
 0. 生成root createElement('div')
 1. 生成Comp组件选项的vnode h(Comp) ->vnode
 2. 开始渲染 render->patch(vnode)->processComponent->mountComponent  
-3. 在mountComponent内部，先setupComponent(instance) 得到setup返回的render函数,在讲render置入  setupRenderEffect中执行
+3. 在mountComponent内部，先setupComponent(instance) 得到setup返回的render函数,在将render置入  setupRenderEffect中执行
 setupRenderEffect内部：
 1. 将setup.render封装成componentUpdateFn（组件更新函数
 2. 组件更新函数componentUpdateFn被放入new ReactiveEffect中执行,此时被“effect”化，渲染函数内部的ref会将ReactiveEffect捕获以便完成数据绑定。

@@ -39,3 +39,64 @@ created做了一件很重要的事情，即绑定dom事件，在事件触发的�
       addEventListener(el, 'change', onCompositionEnd)
     }
 ```
+
+再讲讲编译时逻辑:
+比如一个简单的demo
+```vue
+<script setup>
+import { ref } from 'vue'
+
+const msg = ref('Hello World!')
+</script>
+
+<template>
+  <input v-model="msg">
+</template>
+```
+他会编译成这样，注意看withDirectives这个api,他是用户使用自定义指令对应的api
+```javascript
+import { ref,vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+const __sfc__ = {
+  __name: 'App',
+  setup(__props) {
+
+const msg = ref('Hello World!')
+
+return (_ctx, _cache) => {
+  return _withDirectives(_createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((msg).value = $event)
+  }, null, 512 /* NEED_PATCH */), [
+    [_vModelText, msg.value]
+  ])
+}
+}
+
+}
+```
+让我们来分析一下withDirectives内部做了啥，首先它接受两个参数，第一个是vnode，
+
+```javascript
+_createElementBlock("input", {
+    "onUpdate:modelValue": $event => ((msg).value = $event)
+  }, null, 512 /* NEED_PATCH */)
+```
+它带有一个属性"onUpdate:modelValue":fn,这用于dom更新时触发ref更新，会在后续的created生命周期中被用到
+证据如下↓
+```javascript
+const getModelAssigner = (vnode: VNode): AssignerFn => {
+  const fn =
+    vnode.props!['onUpdate:modelValue'] ||
+    (__COMPAT__ && vnode.props!['onModelCompat:input'])
+  return isArray(fn) ? value => invokeArrayFns(fn, value) : fn
+}
+```
+
+第二个是一个数组
+```javascript
+[
+    [_vModelText, msg.value]
+]
+```
+对于自定义指令来说，他会接收到一个描述其行为的数组，参数一是vModelText，它是一系列生命周期事件的集合，用于调用，上文的created核心逻辑就出自这里面
+第二个是msg.value，它描述了v-model所接收的参数

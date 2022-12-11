@@ -8,7 +8,10 @@ import {
   nextTick,
   ComponentOptions,
   Suspense,
-  FunctionalComponent
+  FunctionalComponent,
+  Teleport,
+  Transition,
+  withCtx
 } from '@vue/runtime-dom'
 
 describe('useCssVars', () => {
@@ -193,6 +196,35 @@ describe('useCssVars', () => {
     render(h(App), root)
     await nextTick()
     for (const c of [].slice.call(root.children as any)) {
+      expect((c as HTMLElement).style.getPropertyValue(`--color`)).toBe('red')
+    }
+  })
+  test('Teleport && transition', async () => {
+    const state = reactive({ color: 'red' })
+    const showThing = ref(true)
+    const root = document.createElement('div')
+    const target = document.createElement('div')
+    const App = {
+      setup() {
+        useCssVars(() => state)
+        return () =>
+          h(
+            Teleport,
+            { to: target },
+            h(Transition, null, {
+              default: withCtx(() => [
+                showThing.value
+                  ? h('div', { key: 0, class: 'text' }, 'Transition')
+                  : 'null'
+              ])
+            })
+          )
+      }
+    }
+
+    render(h(App), root)
+    await nextTick()
+    for (const c of [].slice.call(target.children as any)) {
       expect((c as HTMLElement).style.getPropertyValue(`--color`)).toBe('red')
     }
   })
