@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { baseParse as parse } from '../../src/parse'
 import { transform } from '../../src/transform'
 import { transformIf } from '../../src/transforms/vIf'
@@ -207,7 +208,7 @@ describe('compiler: v-for', () => {
 
   describe('errors', () => {
     test('missing expression', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform('<span v-for />', { onError })
 
       expect(onError).toHaveBeenCalledTimes(1)
@@ -219,7 +220,7 @@ describe('compiler: v-for', () => {
     })
 
     test('empty expression', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform('<span v-for="" />', { onError })
 
       expect(onError).toHaveBeenCalledTimes(1)
@@ -231,7 +232,7 @@ describe('compiler: v-for', () => {
     })
 
     test('invalid expression', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform('<span v-for="items" />', { onError })
 
       expect(onError).toHaveBeenCalledTimes(1)
@@ -243,7 +244,7 @@ describe('compiler: v-for', () => {
     })
 
     test('missing source', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform('<span v-for="item in" />', { onError })
 
       expect(onError).toHaveBeenCalledTimes(1)
@@ -255,7 +256,7 @@ describe('compiler: v-for', () => {
     })
 
     test('missing value', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform('<span v-for="in items" />', { onError })
 
       expect(onError).toHaveBeenCalledTimes(1)
@@ -267,7 +268,7 @@ describe('compiler: v-for', () => {
     })
 
     test('<template v-for> key placement', () => {
-      const onError = jest.fn()
+      const onError = vi.fn()
       parseWithForTransform(
         `
       <template v-for="item in items">
