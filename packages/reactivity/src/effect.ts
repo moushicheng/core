@@ -234,9 +234,15 @@ export class ReactiveEffect<T = any>
 
 let batchDepth = 0
 let batchedSub: Subscriber | undefined
+let batchedComputed: Subscriber | undefined
 
-export function batch(sub: Subscriber): void {
+export function batch(sub: Subscriber, isComputed = false): void {
   sub.flags |= EffectFlags.NOTIFIED
+  if (isComputed) {
+    sub.next = batchedComputed
+    batchedComputed = sub
+    return
+  }
   sub.next = batchedSub
   batchedSub = sub
 }
@@ -257,17 +263,25 @@ export function endBatch(): void {
     return
   }
 
+  if (batchedComputed) {
+    let e: Subscriber | undefined = batchedComputed
+    batchedComputed = undefined
+    while (e) {
+      const next: Subscriber | undefined = e.next
+      e.next = undefined
+      e.flags &= ~EffectFlags.NOTIFIED
+      e = next
+    }
+  }
+
   let error: unknown
   while (batchedSub) {
     let e: Subscriber | undefined = batchedSub
-    let next: Subscriber | undefined
-    while (e) {
-      e.flags &= ~EffectFlags.NOTIFIED
-      e = e.next
-    }
-    e = batchedSub
     batchedSub = undefined
     while (e) {
+      const next: Subscriber | undefined = e.next
+      e.next = undefined
+      e.flags &= ~EffectFlags.NOTIFIED
       if (e.flags & EffectFlags.ACTIVE) {
         try {
           // ACTIVE flag is effect-only
@@ -276,8 +290,6 @@ export function endBatch(): void {
           if (!error) error = err
         }
       }
-      next = e.next
-      e.next = undefined
       e = next
     }
   }
